@@ -10,7 +10,7 @@ template <typename T>
 class Graph
 {
 public:
-    unordered_map<T, list<pair<T, int>>> adjList;
+    unordered_map<T, list<pair<T, int> > > adjList;
 
     void addEdge(T u, T v, int wt, bool direction)
     {
@@ -129,7 +129,7 @@ public:
         }
 
         // BackTrack
-        dfs[src] = false;
+        dfsTrack[src] = false;
 
         return false;
     }

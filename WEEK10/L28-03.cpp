@@ -62,7 +62,7 @@ void insertionAtHead(Node *&head, Node *&tail, int data)
         Node *newNode = new Node(data);
         newNode->Next = head; // point newNode->Next to the head Node
         head = newNode;       // make "newNode" the new head
-        tail - next = newNode;
+        tail->Next  = newNode;
     }
 }
 
@@ -164,7 +164,7 @@ void deleteNode(Node *&head, Node *&tail, int position)
             temp = temp->Next;
         }
         temp->Next = head;
-        tail->next = NULL;
+        tail->Next = NULL;
         delete tail;
         tail = temp;
     }
@@ -219,7 +219,7 @@ int main()
     // deleteNode2(head, tail, 80);
     // printLinkedList(head);
 
-    deleteNode2(head, tail, 20);
+    deleteNode(head, tail, 20);
     printLinkedList(head);
 
     return 0;

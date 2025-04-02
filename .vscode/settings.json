@@ -57,7 +57,11 @@
   "C_Cpp_Runner.useLinkTimeOptimization": false,
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
+    "*.css": "tailwindcss",
     "*.embeddedhtml": "html",
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "unordered_map": "cpp",
+    "queue": "cpp",
+    "vector": "cpp"
   }
 }

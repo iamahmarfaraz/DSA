@@ -171,9 +171,9 @@ int main()
     insertionAtTail(head, tail, 40);
     insertionAtTail(head, tail, 50);
 
-    printLinkedList(head, count);
+    printLinkedList(head);
 
     insertAtPosition(25,3,head,tail);
-    printLinkedList(head,count);
+    printLinkedList(head);
     return 0;
 }

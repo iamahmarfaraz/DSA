@@ -126,12 +126,13 @@ stack<char> validParanthesis(string &s)
             st.push(ch);
         }
     }
+    // gives inValid paranthesis
     return st;
 }
 int countRev(string s)
 {
     int count = 0;
-    stack<char> temp = validParanthesis(s);
+    stack<char> temp = validParanthesis(s); // gives inValid Paranthesis
     if (temp.empty())
     {
         return 0;
@@ -468,11 +469,60 @@ int maximalRectangle(vector<vector<char>> &matrix)
     return ans;
 }
 
+vector<int> asteroidCollision(vector<int> &asteroids)
+{
+
+    // Q.NO - 12
+    // LEETCODE - Q.NO - 735
+
+    stack<int> st;
+    for (int i = 0; i < asteroids.size(); i++)
+    {
+        int curr = asteroids[i];
+        if (curr < 0)
+        {
+            bool currGetDestroyed = false;
+            while (!st.empty() && st.top() > 0)
+            {
+                if (abs(st.top()) > abs(curr))
+                {
+                    currGetDestroyed = true;
+                    break;
+                }
+                if (abs(st.top()) == abs(curr))
+                {
+                    currGetDestroyed = true;
+                    st.pop(); // Destroy both asteroids
+                    break;
+                }
+
+                st.pop();
+            }
+            if (!currGetDestroyed)
+            {
+                st.push(curr);
+            }
+        }
+        else
+        {
+            st.push(curr);
+        }
+    }
+    vector<int> ans;
+    while (!st.empty())
+    {
+        ans.push_back(st.top());
+        st.pop();
+    }
+    reverse(ans.begin(), ans.end());
+    return ans;
+}
+
 class Car
 {
 public:
     int pos, speed;
-    Car(int p, int s) : pos(p), speed(s){};
+    Car(int p, int s) : pos(p), speed(s) {};
 };
 static bool myComp(Car &a, Car &b)
 {
@@ -480,6 +530,10 @@ static bool myComp(Car &a, Car &b)
 }
 int carFleet(int target, vector<int> &position, vector<int> &speed)
 {
+
+    // Q.NO - 13
+    // LEETCODE -- Q.NO - 853
+
     vector<Car> cars;
     for (int i = 0; i < position.size(); i++)
     {
@@ -500,6 +554,219 @@ int carFleet(int target, vector<int> &position, vector<int> &speed)
     int ans = st.size();
     return ans;
 }
+
+vector<double> getCollisionTimes(vector<vector<int>> &cars)
+{
+
+    // Q.NO - 14
+    // LEETCODE -- Q.NO-1776
+
+    vector<double> answer(cars.size(), -1); // collision time of ith car with the next car
+    stack<int> st;
+    for (int i = cars.size() - 1; i >= 0; i--)
+    {
+        // check if curr car is fatser than the next car(st.top wla car)
+        while (!st.empty() && cars[st.top()][1] >= cars[i][1])
+        {
+            st.pop();
+        }
+        while (!st.empty())
+        {
+            double colTime = (double)(cars[st.top()][0] - cars[i][0]) / (cars[i][1] - cars[st.top()][1]);
+            if (answer[st.top()] == -1 || colTime <= answer[st.top()])
+            {
+                answer[i] = colTime;
+                break;
+            }
+            st.pop();
+        }
+
+        st.push(i);
+    }
+    return answer;
+}
+
+int longestValidParentheses(string s)
+{
+
+    // Q.NO - 15
+    // LEETCODE -- Q.NO-32
+
+    stack<int> st;
+    st.push(-1);
+    int maxLength = 0;
+    for (int i = 0; i < s.size(); i++)
+    {
+        char ch = s[i];
+        if (ch == '(')
+        {
+            st.push(i);
+        }
+        else
+        {
+            st.pop();
+            if (st.empty())
+            {
+                st.push(i);
+            }
+            else
+            {
+                int len = i - st.top();
+                maxLength = max(len, maxLength);
+            }
+        }
+    }
+    return maxLength;
+}
+
+vector<int> dailyTemperatures(vector<int> &temperatures)
+{
+
+    // Q.NO -- 16
+    // LEETCODE -- Q.NO-739
+
+    int size = temperatures.size();
+    stack<int> st;
+    st.push(-1);
+    vector<int> ans(size, -1);
+    for (int i = size - 1; i >= 0; i--)
+    {
+        while (st.size() > 1 && temperatures[i] >= temperatures[st.top()])
+        {
+            st.pop();
+        }
+        if (st.top() == -1)
+        {
+            ans[i] = 0;
+        }
+        else
+        {
+            ans[i] = st.top() - i;
+        }
+        st.push(i);
+    }
+    return ans;
+}
+
+string removeKdigits(string num, int k)
+{
+
+    // Q.NO-- 17
+    // LEETCODE -- Q.NO - 402
+
+    stack<char> st;
+    for (auto ch : num)
+    {
+        int digit = ch - '0';
+        while (!st.empty() && k != 0 && ((st.top() - '0') > digit))
+        {
+            k--;
+            st.pop();
+        }
+        st.push(ch);
+    }
+    while (k != 0)
+    {
+        st.pop();
+        k--;
+    }
+    string ans = "";
+    while (!st.empty())
+    {
+        char ch = st.top();
+        st.pop();
+        ans += ch;
+    }
+    reverse(ans.begin(), ans.end());
+    int i = 0;
+    while (ans[i] == '0')
+    {
+        i++;
+    }
+    ans = ans.substr(i);
+    if (ans.size() == 0)
+        return "0";
+    return ans;
+}
+
+int minAddToMakeValid(string s)
+{
+
+    // Q.NO--18
+    // LEETCODE -- Q.NO--921
+
+    stack<char> st;
+    for (auto ch : s)
+    {
+        if (!st.empty() && (ch == ')' && st.top() == '('))
+        {
+            st.pop();
+        }
+        else
+        {
+            st.push(ch);
+        }
+    }
+    return st.size();
+}
+
+class BrowserHistory
+{
+
+    // Q.NO -- 19
+    // LEETCODE -- Q.NO -- 1472
+
+    stack<string> browserStack, fwdStack;
+
+public:
+    BrowserHistory(string homepage)
+    {
+        browserStack.push(homepage);
+    }
+
+    void visit(string url)
+    {
+        // clear all fwd history
+        fwdStack = stack<string>();
+        browserStack.push(url);
+    }
+
+    string back(int steps)
+    {
+        while (steps--)
+        {
+            if (browserStack.size() > 1)
+            {
+                fwdStack.push(browserStack.top());
+                browserStack.pop();
+            }
+            else
+            {
+                // only homepage left so back not possible anymore
+                break;
+            }
+        }
+        return browserStack.top();
+    }
+
+    string forward(int steps)
+    {
+        while (steps--)
+        {
+            if (fwdStack.empty())
+            {
+                // no more fwd tab left
+                break;
+            }
+            else
+            {
+                browserStack.push(fwdStack.top());
+                fwdStack.pop();
+            }
+        }
+        return browserStack.top();
+    }
+};
 
 int main()
 {

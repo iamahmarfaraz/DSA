@@ -22,6 +22,17 @@ public:
     }
 };
 
+class ListNode
+{
+
+public:
+    int val;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *next) : val(x), next(next) {}
+};
+
 void printLinkedList(Node *head)
 {
     Node *temp = head;
@@ -132,15 +143,15 @@ void delete_N_nodesAfter_M_nodes(Node *&head, int &m, int n)
     int i = 0;
     Node *temp = head;
     Node *prevTemp = NULL;
-    while (temp->Next != NULL)
+    while (temp != NULL)
     {
         int nDelete = n;
         i++;
         prevTemp = temp;
         temp = temp->Next;
-        if (temp->Next != NULL && (i % m == 0))
+        if ((i % m == 0))
         {
-            while (nDelete > 0)
+            while (nDelete > 0 && temp != NULL)
             {
                 Node *nextNode = temp->Next;
                 temp->Next = NULL;
@@ -451,7 +462,9 @@ Node *rotateRight(Node *head, int k)
 
 vector<int> nodesBetweenCriticalPoints(Node *head)
 {
-    vector<int> ans = {-1, -1};
+    vector<int> ans;
+    ans.push_back(-1);
+    ans.push_back(-1);
     Node *prev = head;
     if (!prev)
         return ans;
@@ -542,24 +555,214 @@ Node *mergeNodes(Node *head)
     return ans;
 }
 
+ListNode *oddEvenList(ListNode *head)
+{
+
+    // Q.NO 11 --
+    // LEETCODE Q.NO-328
+
+    if (head == NULL || head->next == NULL ||
+        head->next->next == NULL)
+    {
+        return head;
+    }
+    ListNode *odd = head;
+    ListNode *even = head->next;
+    ListNode *firstEvenTrack = head->next;
+    ListNode *trackLastOdd = NULL;
+
+    while (odd != NULL && even != NULL)
+    {
+
+        ListNode *newOdd = odd->next;
+        if (newOdd)
+        {
+            newOdd = newOdd->next;
+        }
+        odd->next = newOdd;
+        odd = newOdd;
+        if (odd)
+        {
+            trackLastOdd = odd;
+        }
+
+        ListNode *newEven = even->next;
+        if (newEven)
+        {
+            newEven = newEven->next;
+        }
+        even->next = newEven;
+        even = newEven;
+    }
+    trackLastOdd->next = firstEvenTrack;
+
+    return head;
+}
+
+ListNode *reverse(ListNode *&head)
+{
+    ListNode *prev = NULL;
+    ListNode *curr = head;
+    while (curr)
+    {
+        ListNode *next = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next;
+    }
+    return prev;
+}
+
+ListNode *doubleIt(ListNode *head)
+{
+
+    // Q.NO-12
+    // LEETCODE-Q.N0-2816
+
+    ListNode *reversedLL_Head = reverse(head);
+    int carry = 0;
+    ListNode *ans = NULL;
+    ListNode *ansHead = NULL;
+    while (reversedLL_Head)
+    {
+        int sum = reversedLL_Head->val + reversedLL_Head->val + carry;
+        int digit = sum % 10;
+        carry = sum / 10;
+        ListNode *newNode = new ListNode(digit);
+        if (ans == NULL)
+        {
+            ans = newNode;
+            ansHead = newNode;
+        }
+        else
+        {
+            ans->next = newNode;
+            ans = newNode;
+        }
+        reversedLL_Head = reversedLL_Head->next;
+    }
+    if (carry != 0)
+    {
+        ListNode *newNode = new ListNode(carry);
+        ans->next = newNode;
+    }
+    ListNode *finalAns = reverse(ansHead);
+    return finalAns;
+}
+
+int lengthOfList(ListNode *head)
+{
+    ListNode *temp = head;
+    int count = 0;
+    while (temp)
+    {
+        count++;
+        temp = temp->next;
+    }
+    return count;
+}
+ListNode *swapNodes(ListNode *head, int k)
+{
+
+    // Q.NO -- 13
+    // LEETCODE -- Q.NO 1721
+
+
+    int length = lengthOfList(head);
+    if (length == 1)
+        return head;
+    int i = 1;
+    ListNode *temp = head;
+    ListNode *firstSwap = NULL;
+    while (i < k)
+    {
+        temp = temp->next;
+        i++;
+    }
+    firstSwap = temp;
+    temp = head;
+
+    ListNode *lastSwap = NULL;
+    i = 1;
+    int lastSwapIndex = length - k;
+    while (i <= lastSwapIndex)
+    {
+        temp = temp->next;
+        i++;
+    }
+    lastSwap = temp;
+    int firstSwapValue = firstSwap->val;
+    firstSwap->val = lastSwap->val;
+    lastSwap->val = firstSwapValue;
+    return head;
+}
+
+void sanatizeMap(ListNode *curr, unordered_map<int, ListNode *> &mp, int csum)
+{
+    int csum2 = csum;
+    while (true)
+    {
+        csum2 += curr->val;
+        if (csum2 == csum)
+            break;
+        mp.erase(csum2);
+        curr = curr->next;
+    }
+}
+ListNode *removeZeroSumSublists(ListNode *head)
+{
+
+    // Q.N0 -- 14
+    // LEETCODE -- Q.NO 1171
+
+    if (!head || (head->next == NULL && head->val == 0))
+        return 0;
+    unordered_map<int, ListNode *> mp;
+    auto it = head;
+    int currSum = 0;
+    while (it)
+    {
+        currSum += it->val;
+        if (currSum == 0)
+        {
+            head = it->next;
+            mp.clear();
+        }
+        else if (mp.find(currSum) != mp.end())
+        {
+            sanatizeMap(mp[currSum]->next, mp, currSum);
+            mp[currSum]->next = it->next;
+        }
+        else
+        {
+            mp[currSum] = it;
+        }
+        it = it->next;
+    }
+    return head;
+}
+
 int main()
 {
     Node *head = NULL;
     Node *tail = NULL;
-    // insertionAtTail(head, tail, 9);
-    // insertionAtTail(head, tail, 1);
-    // insertionAtTail(head, tail, 3);
-    // insertionAtTail(head, tail, 5);
-    // insertionAtTail(head, tail, 9);
-    // insertionAtTail(head, tail, 4);
-    // insertionAtTail(head, tail, 10);
-    // insertionAtTail(head, tail, 1);
+    insertionAtTail(head, tail, 9);
+    insertionAtTail(head, tail, 1);
+    insertionAtTail(head, tail, 3);
+    insertionAtTail(head, tail, 5);
+    insertionAtTail(head, tail, 9);
+    insertionAtTail(head, tail, 4);
+    insertionAtTail(head, tail, 10);
+    insertionAtTail(head, tail, 1);
 
-    // printLinkedList(head);
+    printLinkedList(head);
 
-    // int m = 2, n = 1;
-    // delete_N_nodesAfter_M_nodes(head, m, n);
-    // printLinkedList(head);
+    cout << endl
+         << "Delete N nodes after every M node" << endl
+         << endl;
+    int m = 2, n = 1;
+    delete_N_nodesAfter_M_nodes(head, m, n);
+    printLinkedList(head);
 
     // Node *head1 = NULL;
     // Node *tail1 = NULL;

@@ -14,7 +14,7 @@ void hollow_full_pyramid(int n)
         for (int j = 0; j < i + 1; j++)
         {
             // print stars for first and last column
-            if (j == 0 || j == i + 1 - 1)
+            if (j == 0 || j == i || i == (n-1))
             {
                 cout << "* ";
             }
@@ -100,9 +100,9 @@ void fancy_pattern1(int n)
     int k = 1;
     for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < (2 * i) + 1; j++)
+        for (int j = 0; j < ((2 * i) + 1); j++)
         {
-            if (j % 2 == 1)
+            if ((j & 1) == 1)
             {
                 cout << "* ";
             }
