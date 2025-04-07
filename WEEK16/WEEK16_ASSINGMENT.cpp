@@ -567,6 +567,9 @@ public:
     }
 };
 
+// Q.NO-10   &&    LEETCODE-Q.NO-336
+
+
 int main()
 {
 
