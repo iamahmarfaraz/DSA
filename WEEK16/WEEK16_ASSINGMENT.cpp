@@ -568,7 +568,162 @@ public:
 };
 
 // Q.NO-10   &&    LEETCODE-Q.NO-336
+class TrieNode3
+{
+public:
+    char value;
+    TrieNode3 *children[26];
+    int index;
 
+    TrieNode3(char val)
+    {
+        this->value = val;
+        for (int i = 0; i < 26; i++)
+        {
+            children[i] = NULL;
+        }
+        this->index = -1;
+    }
+};
+
+class Trie3
+{
+    TrieNode3 *root;
+    void insertUtil(TrieNode3 *root, string &word, int i, int &otherIndex)
+    {
+        if (i >= word.length())
+        {
+            root->index = otherIndex;
+            return;
+        }
+
+        char ch = word[i];
+        int index = ch - 'a';
+        TrieNode3 *child;
+        if (root->children[index] != NULL)
+        {
+            // present
+            child = root->children[index];
+        }
+        else
+        {
+            // absent
+            child = new TrieNode3(ch);
+            root->children[index] = child;
+        }
+
+        // recursion
+        insertUtil(child, word, i + 1, otherIndex);
+    }
+
+public:
+    Trie3()
+    {
+        root = new TrieNode3('-');
+    }
+
+    void insert(string &word, int &index)
+    {
+        insertUtil(this->root, word, 0, index);
+    }
+
+    bool isPalindrome(string &word, int start, int end)
+    {
+        while (start < end)
+        {
+            if (word[start] != word[end])
+            {
+                return false;
+            }
+            start++;
+            end--;
+        }
+        return true;
+    }
+
+    void searchCase2(TrieNode3 *curr, vector<int> &myPalindrome, string word)
+    {
+        if (curr->index != -1)
+        {
+            if (isPalindrome(word, 0, word.size() - 1))
+            {
+                myPalindrome.push_back(curr->index);
+            }
+        }
+        for (int i = 0; i < 26; i++)
+        {
+            char ch = i + 'a';
+            word.push_back(ch);
+            if (curr->children[i])
+            {
+                searchCase2(curr->children[i], myPalindrome, word);
+            }
+            word.pop_back();
+        }
+    }
+
+    void search(string &word, vector<int> &myPalindrome)
+    {
+        TrieNode3 *curr = root;
+
+        // case 1: prefix of a word exactly matches with a word in trie
+        for (int i = 0; i < word.size(); i++)
+        {
+            int index = word[i] - 'a';
+
+            if (curr->index != -1)
+            {
+                // check rest of the search-word is palindrome
+                if (isPalindrome(word, i, word.size() - 1))
+                {
+                    myPalindrome.push_back(curr->index);
+                }
+            }
+
+            if (curr->children[index])
+            {
+                curr = curr->children[index];
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        // case 2: search word is a prefix of a word in the trie
+        searchCase2(curr, myPalindrome, "");
+    }
+};
+
+class Solution2
+{
+public:
+    vector<vector<int>> palindromePairs(vector<string> &words)
+    {
+        Trie3 trie;
+        for (int i = 0; i < words.size(); i++)
+        {
+            auto reverseWord = words[i];
+            reverse(reverseWord.begin(), reverseWord.end());
+            trie.insert(reverseWord, i);
+        }
+
+        vector<vector<int>> ans;
+        for (int i = 0; i < words.size(); i++)
+        {
+            vector<int> myPalindrome; // all the palindromic pairs with ith index word
+            trie.search(words[i], myPalindrome);
+            for (auto it : myPalindrome)
+            {
+                if (it != i)
+                {
+                    ans.push_back({i, it});
+                }
+            }
+        }
+        return ans;
+    }
+};
 
 int main()
 {
