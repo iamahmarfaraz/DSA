@@ -797,6 +797,9 @@ public:
     }
 };
 
+// Q.NO-10     &&      LEETCODE-Q.NO-877
+
+
 int main()
 {
     PerfectSquares *ans1 = new PerfectSquares();
