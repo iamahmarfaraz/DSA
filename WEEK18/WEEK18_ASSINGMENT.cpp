@@ -798,6 +798,16 @@ public:
 };
 
 // Q.NO-10     &&      LEETCODE-Q.NO-877
+class StoneGame
+{
+public:
+    bool stoneGame(vector<int> &piles)
+    {
+        return true;
+    }
+};
+
+// Q.NO-11     &&      LEETCODE-Q.NO-1140
 
 
 int main()
