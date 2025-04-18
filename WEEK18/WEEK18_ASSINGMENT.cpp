@@ -808,7 +808,404 @@ public:
 };
 
 // Q.NO-11     &&      LEETCODE-Q.NO-1140
+class StoneGameII
+{
+public:
+    int solve(vector<int> &piles, int idx, int M, bool aliceTurn)
+    {
+        if (idx == piles.size())
+            return 0;
 
+        int ans = aliceTurn ? INT_MIN : INT_MAX;
+        int total = 0;
+        for (int X = 1; X <= 2 * M; X++)
+        {
+            if (idx + X - 1 >= piles.size())
+                break;
+            total += piles[idx + X - 1];
+            if (aliceTurn)
+            {
+                ans = max(ans, total + solve(piles, idx + X, max(M, X), !aliceTurn));
+            }
+            else
+            {
+                ans = min(ans, solve(piles, idx + X, max(M, X), !aliceTurn));
+            }
+        }
+
+        return ans;
+    }
+
+    int solveMemo(vector<int> &piles, int idx, int M, bool aliceTurn, vector<vector<vector<int>>> &dp)
+    {
+        if (idx == piles.size())
+            return 0;
+
+        if (dp[idx][M][aliceTurn] != -1)
+        {
+            return dp[idx][M][aliceTurn];
+        }
+
+        int ans = aliceTurn ? INT_MIN : INT_MAX;
+        int total = 0;
+        for (int X = 1; X <= 2 * M; X++)
+        {
+            if (idx + X - 1 >= piles.size())
+                break;
+            total += piles[idx + X - 1];
+            if (aliceTurn)
+            {
+                ans = max(ans, total + solveMemo(piles, idx + X, max(M, X), !aliceTurn, dp));
+            }
+            else
+            {
+                ans = min(ans, solveMemo(piles, idx + X, max(M, X), !aliceTurn, dp));
+            }
+        }
+
+        dp[idx][M][aliceTurn] = ans;
+
+        return ans;
+    }
+
+    int solveTab(vector<int> &piles)
+    {
+        int n = piles.size();
+
+        // Increase 2nd dimension to handle max(j, X) safely
+        vector<vector<vector<int>>> dp(n + 1, vector<vector<int>>(2 * n + 1, vector<int>(2, 0)));
+
+        for (int i = n - 1; i >= 0; i--)
+        {
+            for (int M = n; M >= 1; M--)
+            {
+                for (int k = 1; k >= 0; k--)
+                {
+                    int ans = k ? INT_MIN : INT_MAX;
+                    int total = 0;
+                    for (int X = 1; X <= 2 * M; X++)
+                    {
+                        if (i + X > n)
+                            break;
+                        total += piles[i + X - 1];
+                        int nextM = max(M, X);
+                        if (k)
+                        {
+                            ans = max(ans, total + dp[i + X][nextM][!k]);
+                        }
+                        else
+                        {
+                            ans = min(ans, dp[i + X][nextM][!k]);
+                        }
+                    }
+                    dp[i][M][k] = ans;
+                }
+            }
+        }
+
+        return dp[0][1][1];
+    }
+
+    int stoneGameII(vector<int> &piles)
+    {
+        // return solve(piles,0,1,true);
+        // vector<vector<vector<int>>>dp(piles.size()+1,vector<vector<int>>(piles.size()+1,vector<int>(2,-1)));
+        // return solveMemo(piles,0,1,true,dp);
+        return solveTab(piles);
+    }
+};
+
+// Q.NO-12      &&      LEETCODE-Q.NO-1406
+class Solution
+{
+public:
+    int solve(int i, vector<int> &stone)
+    {
+        if (i >= stone.size())
+            return 0;
+
+        int sum = 0;
+        int maxDiff = INT_MIN;
+
+        for (int k = 0; k < 3 && i + k < stone.size(); ++k)
+        {
+            sum += stone[i + k];
+            maxDiff = max(maxDiff, sum - solve(i + k + 1, stone));
+        }
+
+        return maxDiff;
+    }
+
+    int solveMemo(int i, vector<int> &stone, vector<int> &dp)
+    {
+        if (i >= stone.size())
+            return 0;
+        if (dp[i] != INT_MIN)
+            return dp[i];
+
+        int sum = 0;
+        int maxDiff = INT_MIN;
+
+        for (int k = 0; k < 3 && i + k < stone.size(); ++k)
+        {
+            sum += stone[i + k];
+            maxDiff = max(maxDiff, sum - solveMemo(i + k + 1, stone, dp));
+        }
+
+        return dp[i] = maxDiff;
+    }
+
+    int solveTab(vector<int> &stone)
+    {
+        vector<int> dp(stone.size() + 1, 0);
+
+        for (int i = stone.size() - 1; i >= 0; i--)
+        {
+            int sum = 0;
+            int maxDiff = INT_MIN;
+
+            for (int k = 0; k < 3 && i + k < stone.size(); ++k)
+            {
+                sum += stone[i + k];
+                maxDiff = max(maxDiff, sum - dp[i + k + 1]);
+            }
+            dp[i] = maxDiff;
+        }
+
+        return dp[0];
+    }
+
+    string stoneGameIII(vector<int> &stoneValue)
+    {
+        int n = stoneValue.size();
+        vector<int> dp(n + 1, INT_MIN);
+        // int diff = solve(0, stoneValue);
+        // int diff = solveMemo(0, stoneValue, dp);
+        int diff = solveTab(stoneValue);
+
+        if (diff > 0)
+            return "Alice";
+        if (diff < 0)
+            return "Bob";
+        return "Tie";
+    }
+};
+
+// Q.NO-13     &&     LEETCODE-Q.NO-312
+class BurstBalloons
+{
+public:
+    int solve(vector<int> &nums, int left, int right)
+    {
+        if (left + 1 == right)
+            return 0; // No balloon to burst between left and right
+
+        int maxCoins = 0;
+        for (int i = left + 1; i < right; ++i)
+        {
+            int coins = nums[left] * nums[i] * nums[right];
+            coins += solve(nums, left, i) + solve(nums, i, right);
+            maxCoins = max(maxCoins, coins);
+        }
+
+        return maxCoins;
+    }
+
+    int solveMemo(vector<int> &nums, int left, int right, vector<vector<int>> &dp)
+    {
+        if (left + 1 == right)
+            return 0; // No balloon to burst between left and right
+
+        if (dp[left][right] != -1)
+        {
+            return dp[left][right];
+        }
+
+        int maxCoins = 0;
+        for (int i = left + 1; i < right; ++i)
+        {
+            int coins = nums[left] * nums[i] * nums[right];
+            coins += solveMemo(nums, left, i, dp) + solveMemo(nums, i, right, dp);
+            maxCoins = max(maxCoins, coins);
+        }
+
+        return dp[left][right] = maxCoins;
+    }
+
+    int maxCoins(vector<int> &nums)
+    {
+        // Insert virtual boundaries
+        nums.insert(nums.begin(), 1);
+        nums.push_back(1);
+        // return solve(nums, 0, nums.size() - 1);
+        vector<vector<int>> dp(nums.size() + 2, vector<int>(nums.size() + 2, -1));
+        return solveMemo(nums, 0, nums.size() - 1, dp);
+    }
+};
+
+// Q.NO-14     &&      LEETCODE-Q.NO-97
+class InterleavingString
+{
+public:
+    bool solve(string &s1, string &s2, string &s3, int i, int j, int k)
+    {
+        if (i == s1.size() && j == s2.size() && k == s3.size())
+            return true;
+
+        bool flag = false;
+        if ((i < s1.size()) && s1[i] == s3[k])
+        {
+            flag = flag || solve(s1, s2, s3, i + 1, j, k + 1);
+        }
+        if ((j < s2.size()) && s2[j] == s3[k])
+        {
+            flag = flag || solve(s1, s2, s3, i, j + 1, k + 1);
+        }
+        return flag;
+    }
+
+    bool solveMemo(string &s1, string &s2, string &s3, int i, int j, int k, vector<vector<vector<int>>> &dp)
+    {
+        if (i == s1.size() && j == s2.size() && k == s3.size())
+            return true;
+        if (k == s3.size())
+            return false;
+
+        if (dp[i][j][k] != -1)
+        {
+            return dp[i][j][k];
+        }
+
+        bool flag = false;
+        if ((i < s1.size()) && s1[i] == s3[k])
+        {
+            flag = flag || solveMemo(s1, s2, s3, i + 1, j, k + 1, dp);
+        }
+        if ((j < s2.size()) && s2[j] == s3[k])
+        {
+            flag = flag || solveMemo(s1, s2, s3, i, j + 1, k + 1, dp);
+        }
+
+        return dp[i][j][k] = flag;
+    }
+
+    bool solveTab(string &s1, string &s2, string &s3)
+    {
+        vector<vector<vector<bool>>> dp(s1.size() + 1, vector<vector<bool>>(s2.size() + 1, vector<bool>(s3.size() + 1, false)));
+
+        // initialize value according to base case
+        dp[s1.size()][s2.size()][s3.size()] = true;
+
+        for (int i = s1.size(); i >= 0; i--)
+        {
+            for (int j = s2.size(); j >= 0; j--)
+            {
+                for (int k = s3.size() - 1; k >= 0; k--)
+                {
+                    bool flag = false;
+                    if ((i < s1.size()) && s1[i] == s3[k])
+                    {
+                        flag = flag || dp[i + 1][j][k + 1];
+                    }
+                    if ((j < s2.size()) && s2[j] == s3[k])
+                    {
+                        flag = flag || dp[i][j + 1][k + 1];
+                    }
+                    dp[i][j][k] = flag;
+                }
+            }
+        }
+
+        return dp[0][0][0];
+    }
+
+    bool isInterleave(string &s1, string &s2, string &s3)
+    {
+        // return solve(s1,s2,s3,0,0,0);
+        vector<vector<vector<int>>> dp(s1.size() + 1, vector<vector<int>>(s2.size() + 1, vector<int>(s3.size() + 1, -1)));
+        // return solveMemo(s1,s2,s3,0,0,0,dp);
+        return solveTab(s1, s2, s3);
+    }
+};
+
+// Q.NO-15     &&      LEETCODE-Q.NO-1312
+class Solution
+{
+public:
+    int longestCommonSubsequenceUsingTabulationSO(string &text1, string &text2)
+    {
+        int m = text1.size();
+        int n = text2.size();
+        vector<int> prev(m + 1, 0); //"m" isley liya cause row wise array bnana tha
+        vector<int> curr(m + 1, 0);
+
+        for (int j = n - 1; j >= 0; j--)
+        {
+            for (int i = m - 1; i >= 0; i--)
+            {
+                int ans = 0;
+                if (text1[i] == text2[j])
+                {
+                    ans = 1 + prev[i + 1];
+                }
+                else
+                {
+                    int temp1 = 0 + prev[i];
+                    int temp2 = 0 + curr[i + 1];
+                    ans = max(temp1, temp2);
+                }
+                curr[i] = ans;
+            }
+            prev = curr;
+        }
+        return prev[0];
+    }
+    int minInsertions(string s)
+    {
+        string a = s;
+        reverse(a.begin(), a.end());
+        int ans = longestCommonSubsequenceUsingTabulationSO(s, a);
+        return (s.size() - ans);
+    }
+};
+
+// Q.NO-16      &&     LEETCODE-Q.NO-354
+class RussianDollEnvelopes
+{
+public:
+    int lengthOfLISUsingBinarySearch(vector<vector<int>> &nums)
+    {
+        vector<int> ans;
+        ans.push_back(nums[0][1]); // use height instead of width
+        int size = nums.size();
+        for (int i = 1; i < size; i++)
+        {
+            if (nums[i][1] > ans.back())
+            {
+                ans.push_back(nums[i][1]);
+            }
+            else
+            {
+                int index = lower_bound(ans.begin(), ans.end(), nums[i][1]) - ans.begin();
+                ans[index] = nums[i][1];
+            }
+        }
+        return ans.size();
+    }
+
+    int maxEnvelopes(vector<vector<int>> &envelopes)
+    {
+        // Custom sort
+        sort(envelopes.begin(), envelopes.end(), [](vector<int> &a, vector<int> &b)
+             {
+            //return whoever's width is greater and if widths are equal then
+            //return based on height
+            if (a[0] == b[0])
+                return a[1] > b[1];
+            return a[0] < b[0]; });
+        return lengthOfLISUsingBinarySearch(envelopes);
+    }
+};
 
 int main()
 {
