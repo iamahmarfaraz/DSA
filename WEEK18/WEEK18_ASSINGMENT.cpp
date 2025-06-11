@@ -1207,6 +1207,999 @@ public:
     }
 };
 
+// Q.NO-17     &&     LEETCODE-Q.NO-1671
+class MinimumNumberofRemovalstoMakeMountainArray
+{
+public:
+    int lengthOfLISUsingBinarySearch(vector<int> &nums, vector<int> &lis)
+    {
+        vector<int> ans;
+        ans.push_back(nums[0]);
+        lis.push_back(1);
+        // int lastIndex = ans.size()-1;
+        int size = nums.size();
+        for (int i = 1; i < size; i++)
+        {
+            if (nums[i] > ans.back())
+            {
+                ans.push_back(nums[i]);
+                lis.push_back(ans.size());
+            }
+            else
+            {
+                // REplace the lowerbound index element "ans" array with nums[i]
+                int index = lower_bound(ans.begin(), ans.end(), nums[i]) - ans.begin();
+                // Replace
+                ans[index] = nums[i];
+                lis.push_back(index + 1);
+            }
+        }
+        return ans.size();
+    }
+
+    int minimumMountainRemovals(vector<int> &nums)
+    {
+        vector<int> lis;
+        vector<int> lds;
+        lengthOfLISUsingBinarySearch(nums, lis);
+        reverse(nums.begin(), nums.end());
+        lengthOfLISUsingBinarySearch(nums, lds);
+
+        int mountain = INT_MIN;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            if (lis[i] == 1 || lds[nums.size() - i - 1] == 1)
+                continue;
+            mountain = max(mountain, (lis[i] + lds[nums.size() - i - 1] - 1));
+        }
+        return nums.size() - mountain;
+    }
+};
+
+// Q.NO-18      &&     LEETCODE-Q.NO-1187
+class MakeArrayStrictlyIncreasing
+{
+public:
+#define INF (1e9 + 1)
+    int solve(vector<int> &arr1, vector<int> &arr2, int prev, int curr)
+    {
+        if (curr >= arr1.size())
+            return 0;
+
+        int operation1 = INF;
+        if (prev < arr1[curr])
+        {
+            // no operation
+            operation1 = 0 + solve(arr1, arr2, arr1[curr], curr + 1);
+        }
+        int operation2 = INF;
+        auto it = upper_bound(arr2.begin(), arr2.end(), prev);
+        if (it != arr2.end())
+        {
+            // prev se just bigger arr2 me mil gya
+            int indexJustGreaterThanPrev = it - arr2.begin();
+            // arr1[i] = arr2[indexJustGreaterThanPrev];  //we dont want to change arr1 original
+            // array so see below
+            // operation2 = 1 + solve(arr1,arr2,arr1[curr],curr+1);  //instead of this
+            operation2 = 1 + solve(arr1, arr2, arr2[indexJustGreaterThanPrev], curr + 1); // this.
+        }
+        return min(operation1, operation2);
+    }
+
+    int solveMemo(vector<int> &arr1, vector<int> &arr2, int prev, int curr, map<pair<int, int>, int> &dp)
+    {
+        if (curr >= arr1.size())
+            return 0;
+
+        if (dp.find({prev, curr}) != dp.end())
+        {
+            return dp[{prev, curr}];
+        }
+
+        int operation1 = INF;
+        if (prev < arr1[curr])
+        {
+            // no operation
+            operation1 = 0 + solveMemo(arr1, arr2, arr1[curr], curr + 1, dp);
+        }
+        int operation2 = INF;
+        auto it = upper_bound(arr2.begin(), arr2.end(), prev);
+        if (it != arr2.end())
+        {
+            // prev se just bigger arr2 me mil gya
+            int indexJustGreaterThanPrev = it - arr2.begin();
+            // arr1[i] = arr2[indexJustGreaterThanPrev];  //we dont want to change arr1 original
+            // array so see below
+            // operation2 = 1 + solve(arr1,arr2,arr1[curr],curr+1);  //instead of this
+            operation2 = 1 + solveMemo(arr1, arr2, arr2[indexJustGreaterThanPrev], curr + 1, dp); // this.
+        }
+        return dp[{prev, curr}] = min(operation1, operation2);
+    }
+
+    int makeArrayIncreasing(vector<int> &arr1, vector<int> &arr2)
+    {
+        sort(arr2.begin(), arr2.end());
+        // int ans =  solve(arr1,arr2,-1,0);
+        map<pair<int, int>, int> dp;
+        int ans = solveMemo(arr1, arr2, -1, 0, dp);
+        return ans == INF ? -1 : ans;
+    }
+};
+
+// Q.NO-19     &&       LEETCODE-Q.NO-122
+class BestTimetoBuyandSellStockII
+{
+public:
+    int solve(vector<int> &prices, int i, int canBuy)
+    {
+        if (i >= prices.size())
+            return 0;
+
+        int profit = 0;
+        if (canBuy)
+        {
+            // case1 : buy stock
+            int profit1 = -prices[i] + solve(prices, i + 1, 0);
+            // case2 : ignore buying stock
+            int profit2 = 0 + solve(prices, i + 1, 1);
+            profit = max(profit1, profit2);
+        }
+        else
+        {
+            // sell stock
+            // case3 : sell stock
+            int profit3 = prices[i] + solve(prices, i + 1, 1);
+            // case4 : ignore selling stock
+            int profit4 = solve(prices, i + 1, 0);
+            profit = max(profit3, profit4);
+        }
+        return profit;
+    }
+
+    int solveMemo(vector<int> &prices, int i, int canBuy, vector<vector<int>> &dp)
+    {
+        if (i >= prices.size())
+            return 0;
+
+        if (dp[i][canBuy] != -1)
+        {
+            return dp[i][canBuy];
+        }
+
+        int profit = 0;
+        if (canBuy)
+        {
+            // case1 : buy stock
+            int profit1 = -prices[i] + solveMemo(prices, i + 1, 0, dp);
+            // case2 : ignore buying stock
+            int profit2 = 0 + solveMemo(prices, i + 1, 1, dp);
+            profit = max(profit1, profit2);
+        }
+        else
+        {
+            // sell stock
+            // case3 : sell stock
+            int profit3 = prices[i] + solveMemo(prices, i + 1, 1, dp);
+            // case4 : ignore selling stock
+            int profit4 = solveMemo(prices, i + 1, 0, dp);
+            profit = max(profit3, profit4);
+        }
+        return dp[i][canBuy] = profit;
+    }
+
+    int solveTab(vector<int> &prices)
+    {
+
+        // dp initialized with base case i.e 0 at all element in 2d dp after i>=prices.size()
+        vector<vector<int>> dp(prices.size() + 1, vector<int>(3, 0));
+
+        for (int i = prices.size() - 1; i >= 0; i--)
+        {
+            for (int canBuy = 0; canBuy <= 1; canBuy++)
+            {
+                int profit = 0;
+                if (canBuy)
+                {
+                    // case1 : buy stock
+                    int profit1 = -prices[i] + dp[i + 1][0];
+                    // case2 : ignore buying stock
+                    int profit2 = 0 + dp[i + 1][1];
+                    profit = max(profit1, profit2);
+                }
+                else
+                {
+                    // sell stock
+                    // case3 : sell stock
+                    int profit3 = prices[i] + dp[i + 1][1];
+                    // case4 : ignore selling stock
+                    int profit4 = dp[i + 1][0];
+                    profit = max(profit3, profit4);
+                }
+                dp[i][canBuy] = profit;
+            }
+        }
+
+        return dp[0][1];
+    }
+
+    int solveTabSO(vector<int> &prices)
+    {
+
+        // dp initialized with base case i.e 0 at all element in 2d dp after i>=prices.size()
+        // vector<vector<int>>dp(prices.size()+1,vector<int>(3,0));
+
+        vector<int> curr(3, 0);
+        vector<int> next(3, 0);
+
+        for (int i = prices.size() - 1; i >= 0; i--)
+        {
+            for (int canBuy = 0; canBuy <= 1; canBuy++)
+            {
+                int profit = 0;
+                if (canBuy)
+                {
+                    // case1 : buy stock
+                    int profit1 = -prices[i] + next[0];
+                    // case2 : ignore buying stock
+                    int profit2 = 0 + next[1];
+                    profit = max(profit1, profit2);
+                }
+                else
+                {
+                    // sell stock
+                    // case3 : sell stock
+                    int profit3 = prices[i] + next[1];
+                    // case4 : ignore selling stock
+                    int profit4 = next[0];
+                    profit = max(profit3, profit4);
+                }
+                curr[canBuy] = profit;
+            }
+            next = curr;
+        }
+
+        return curr[1];
+    }
+
+    int maxProfit(vector<int> &prices)
+    {
+        // return solve(prices,0,true);
+
+        // vector<vector<int>>dp(prices.size()+1,vector<int>(3,-1));
+        // return solveMemo(prices,0,true,dp);
+        // return solveTab(prices);
+        return solveTabSO(prices);
+    }
+};
+
+// Q.NO-20      &&       LEETCODE-Q.NO-123
+class BestTimetoBuyandSellStockIII
+{
+public:
+    int solve(vector<int> &prices, int i, int canBuy, int noOfTransaction)
+    {
+        if (noOfTransaction <= 0)
+            return 0;
+        if (i >= prices.size())
+            return 0;
+
+        int profit = 0;
+        if (canBuy)
+        {
+            //  BOUGHT THE STOCK
+            int buy1 = -prices[i] + solve(prices, i + 1, 0, noOfTransaction - 1);
+            //  IGNORED BUYING STOCK
+            int buy2 = 0 + solve(prices, i + 1, 1, noOfTransaction);
+            profit = max(buy1, buy2);
+        }
+        else
+        {
+            //  SOLD A STOCK
+            int sold1 = prices[i] + solve(prices, i + 1, 1, noOfTransaction - 1);
+            //  IGNORED SELLING STOCK
+            int sold2 = 0 + solve(prices, i + 1, 0, noOfTransaction);
+            profit = max(sold1, sold2);
+        }
+        return profit;
+    }
+
+    int solveMem(vector<int> &prices, int i, int canBuy, int noOfTransaction, vector<vector<vector<int>>> &dp)
+    {
+        if (noOfTransaction <= 0)
+            return 0;
+        if (i >= prices.size())
+            return 0;
+
+        if (dp[i][canBuy][noOfTransaction] != -1)
+        {
+            return dp[i][canBuy][noOfTransaction];
+        }
+
+        int profit = 0;
+        if (canBuy)
+        {
+            //  BOUGHT THE STOCK
+            int buy1 = -prices[i] + solveMem(prices, i + 1, 0, noOfTransaction - 1, dp);
+            //  IGNORED BUYING STOCK
+            int buy2 = 0 + solveMem(prices, i + 1, 1, noOfTransaction, dp);
+            profit = max(buy1, buy2);
+        }
+        else
+        {
+            //  SOLD A STOCK
+            int sold1 = prices[i] + solveMem(prices, i + 1, 1, noOfTransaction - 1, dp);
+            //  IGNORED SELLING STOCK
+            int sold2 = 0 + solveMem(prices, i + 1, 0, noOfTransaction, dp);
+            profit = max(sold1, sold2);
+        }
+        return dp[i][canBuy][noOfTransaction] = profit;
+    }
+
+    int solveTab(vector<int> &prices)
+    {
+        vector<vector<vector<int>>> dp(prices.size() + 1, vector<vector<int>>(3, vector<int>(5, 0)));
+
+        int profit = 0;
+        for (int i = prices.size() - 1; i >= 0; i--)
+        {
+            for (int j = 0; j <= 1; j++)
+            {
+                for (int k = 1; k <= 4; k++)
+                {
+                    if (j)
+                    {
+                        //  BOUGHT THE STOCK
+                        int buy1 = -prices[i] + dp[i + 1][0][k - 1];
+                        //  IGNORED BUYING STOCK
+                        int buy2 = 0 + dp[i + 1][1][k];
+                        dp[i][j][k] = max(buy1, buy2);
+                    }
+                    else
+                    {
+                        //  SOLD A STOCK
+                        int sold1 = prices[i] + dp[i + 1][1][k - 1];
+                        //  IGNORED SELLING STOCK
+                        int sold2 = 0 + dp[i + 1][0][k];
+                        dp[i][j][k] = max(sold1, sold2);
+                    }
+                }
+            }
+        }
+
+        return dp[0][1][4];
+    }
+
+    int solveTabSO(vector<int> &prices)
+    {
+        vector<vector<vector<int>>> dp(prices.size() + 1, vector<vector<int>>(3, vector<int>(5, 0)));
+        vector<vector<int>> next(3, vector<int>(5, 0));
+        vector<vector<int>> curr(3, vector<int>(5, 0));
+
+        int profit = 0;
+        for (int i = prices.size() - 1; i >= 0; i--)
+        {
+            for (int j = 0; j <= 1; j++)
+            {
+                for (int k = 1; k <= 4; k++)
+                {
+                    if (j)
+                    {
+                        //  BOUGHT THE STOCK
+                        int buy1 = -prices[i] + next[0][k - 1];
+                        //  IGNORED BUYING STOCK
+                        int buy2 = 0 + next[1][k];
+                        curr[j][k] = max(buy1, buy2);
+                    }
+                    else
+                    {
+                        //  SOLD A STOCK
+                        int sold1 = prices[i] + next[1][k - 1];
+                        //  IGNORED SELLING STOCK
+                        int sold2 = 0 + next[0][k];
+                        curr[j][k] = max(sold1, sold2);
+                    }
+                }
+            }
+            next = curr;
+        }
+
+        return curr[1][4];
+    }
+
+    int maxProfit(vector<int> &prices)
+    {
+        // return solve(prices,0,1,4);
+        //  vector<vector<vector<int>>>dp(prices.size(),vector<vector<int>>(2,vector<int>(5,-1)));
+        //  return solveMem(prices,0,1,4,dp);
+        // return solveTab(prices);
+        return solveTabSO(prices);
+    }
+};
+
+// Q.NO-21      &&       LEETCODE-Q.NO-188
+class BestTimetoBuyandSellStockIV
+{
+public:
+    int solve(vector<int> &prices, int i, int canBuy, int noOfTransaction)
+    {
+        if (noOfTransaction <= 0)
+            return 0;
+        if (i >= prices.size())
+            return 0;
+
+        int profit = 0;
+        if (canBuy)
+        {
+            //  BOUGHT THE STOCK
+            int buy1 = -prices[i] + solve(prices, i + 1, 0, noOfTransaction - 1);
+            //  IGNORED BUYING STOCK
+            int buy2 = 0 + solve(prices, i + 1, 1, noOfTransaction);
+            profit = max(buy1, buy2);
+        }
+        else
+        {
+            //  SOLD A STOCK
+            int sold1 = prices[i] + solve(prices, i + 1, 1, noOfTransaction - 1);
+            //  IGNORED SELLING STOCK
+            int sold2 = 0 + solve(prices, i + 1, 0, noOfTransaction);
+            profit = max(sold1, sold2);
+        }
+        return profit;
+    }
+
+    int solveMem(vector<int> &prices, int i, int canBuy, int noOfTransaction, vector<vector<vector<int>>> &dp)
+    {
+        if (noOfTransaction <= 0)
+            return 0;
+        if (i >= prices.size())
+            return 0;
+
+        if (dp[i][canBuy][noOfTransaction] != -1)
+        {
+            return dp[i][canBuy][noOfTransaction];
+        }
+
+        int profit = 0;
+        if (canBuy)
+        {
+            //  BOUGHT THE STOCK
+            int buy1 = -prices[i] + solveMem(prices, i + 1, 0, noOfTransaction - 1, dp);
+            //  IGNORED BUYING STOCK
+            int buy2 = 0 + solveMem(prices, i + 1, 1, noOfTransaction, dp);
+            profit = max(buy1, buy2);
+        }
+        else
+        {
+            //  SOLD A STOCK
+            int sold1 = prices[i] + solveMem(prices, i + 1, 1, noOfTransaction - 1, dp);
+            //  IGNORED SELLING STOCK
+            int sold2 = 0 + solveMem(prices, i + 1, 0, noOfTransaction, dp);
+            profit = max(sold1, sold2);
+        }
+        return dp[i][canBuy][noOfTransaction] = profit;
+    }
+
+    int solveTab(vector<int> &prices, int &limit)
+    {
+        vector<vector<vector<int>>> dp(prices.size() + 1, vector<vector<int>>(3, vector<int>((2 * limit + 1), 0)));
+
+        int profit = 0;
+        for (int i = prices.size() - 1; i >= 0; i--)
+        {
+            for (int j = 0; j <= 1; j++)
+            {
+                for (int k = 1; k <= (2 * limit); k++)
+                {
+                    if (j)
+                    {
+                        //  BOUGHT THE STOCK
+                        int buy1 = -prices[i] + dp[i + 1][0][k - 1];
+                        //  IGNORED BUYING STOCK
+                        int buy2 = 0 + dp[i + 1][1][k];
+                        dp[i][j][k] = max(buy1, buy2);
+                    }
+                    else
+                    {
+                        //  SOLD A STOCK
+                        int sold1 = prices[i] + dp[i + 1][1][k - 1];
+                        //  IGNORED SELLING STOCK
+                        int sold2 = 0 + dp[i + 1][0][k];
+                        dp[i][j][k] = max(sold1, sold2);
+                    }
+                }
+            }
+        }
+
+        return dp[0][1][2 * limit];
+    }
+
+    int solveTabSO(vector<int> &prices, int &limit)
+    {
+        vector<vector<int>> next(3, vector<int>((2 * limit + 1), 0));
+        vector<vector<int>> curr(3, vector<int>((2 * limit + 1), 0));
+
+        int profit = 0;
+        for (int i = prices.size() - 1; i >= 0; i--)
+        {
+            for (int j = 0; j <= 1; j++)
+            {
+                for (int k = 1; k <= (2 * limit); k++)
+                {
+                    if (j)
+                    {
+                        //  BOUGHT THE STOCK
+                        int buy1 = -prices[i] + next[0][k - 1];
+                        //  IGNORED BUYING STOCK
+                        int buy2 = 0 + next[1][k];
+                        curr[j][k] = max(buy1, buy2);
+                    }
+                    else
+                    {
+                        //  SOLD A STOCK
+                        int sold1 = prices[i] + next[1][k - 1];
+                        //  IGNORED SELLING STOCK
+                        int sold2 = 0 + next[0][k];
+                        curr[j][k] = max(sold1, sold2);
+                    }
+                }
+            }
+            next = curr;
+        }
+
+        return curr[1][(2 * limit)];
+    }
+    int maxProfit(int k, vector<int> &prices)
+    {
+        // return solve(prices,0,1,2*k);
+        //  vector<vector<vector<int>>>dp(prices.size(),vector<vector<int>>(2,vector<int>((2*k+1),-1)));
+        //  return solveMem(prices,0,1,2*k,dp);
+        //  return solveTab(prices,k);
+        return solveTabSO(prices, k);
+    }
+};
+
+// Q.NO-22     &&      LEETCODE-Q.NO-714
+class BestTimetoBuyandSellStockwithTransactionFee
+{
+public:
+    int solve(vector<int> &prices, int i, int canBuy, int &fee)
+    {
+        if (i >= prices.size())
+            return 0;
+
+        int profit = 0;
+        if (canBuy)
+        {
+            // BOUGHT STOCK
+            int buy1 = -prices[i] + solve(prices, i + 1, 0, fee);
+            // IGNORED
+            int buy2 = 0 + solve(prices, i + 1, 1, fee);
+            profit = max(buy1, buy2);
+        }
+        else
+        {
+            // SOLD THE STOCK
+            int sold1 = prices[i] - fee + solve(prices, i + 1, 1, fee);
+            // IGNORED
+            int sold2 = 0 + solve(prices, i + 1, 0, fee);
+            profit = max(sold1, sold2);
+        }
+        return profit;
+    }
+
+    int solveMem(vector<int> &prices, int i, int canBuy, int &fee, vector<vector<int>> &dp)
+    {
+        if (i >= prices.size())
+            return 0;
+
+        if (dp[i][canBuy] != -1)
+        {
+            return dp[i][canBuy];
+        }
+
+        int profit = 0;
+        if (canBuy)
+        {
+            // BOUGHT STOCK
+            int buy1 = -prices[i] + solveMem(prices, i + 1, 0, fee, dp);
+            // IGNORED
+            int buy2 = 0 + solveMem(prices, i + 1, 1, fee, dp);
+            profit = max(buy1, buy2);
+        }
+        else
+        {
+            // SOLD THE STOCK
+            int sold1 = prices[i] - fee + solveMem(prices, i + 1, 1, fee, dp);
+            // IGNORED
+            int sold2 = 0 + solveMem(prices, i + 1, 0, fee, dp);
+            profit = max(sold1, sold2);
+        }
+        return dp[i][canBuy] = profit;
+    }
+
+    int solveTab(vector<int> &prices, int &fee)
+    {
+        vector<vector<int>> dp(prices.size() + 1, vector<int>(3, 0));
+
+        for (int i = prices.size() - 1; i >= 0; i--)
+        {
+            for (int canBuy = 0; canBuy <= 1; canBuy++)
+            {
+                if (canBuy)
+                {
+                    // BOUGHT STOCK
+                    int buy1 = -prices[i] + dp[i + 1][0];
+                    // IGNORED
+                    int buy2 = 0 + dp[i + 1][1];
+                    dp[i][canBuy] = max(buy1, buy2);
+                }
+                else
+                {
+                    // SOLD THE STOCK
+                    int sold1 = prices[i] - fee + dp[i + 1][1];
+                    // IGNORED
+                    int sold2 = 0 + dp[i + 1][0];
+                    dp[i][canBuy] = max(sold1, sold2);
+                }
+            }
+        }
+
+        return dp[0][1];
+    }
+
+    int solveTabSO(vector<int> &prices, int &fee)
+    {
+        vector<int> next(3, 0);
+        vector<int> curr(3, 0);
+
+        for (int i = prices.size() - 1; i >= 0; i--)
+        {
+            for (int canBuy = 0; canBuy <= 1; canBuy++)
+            {
+                if (canBuy)
+                {
+                    // BOUGHT STOCK
+                    int buy1 = -prices[i] + next[0];
+                    // IGNORED
+                    int buy2 = 0 + next[1];
+                    curr[canBuy] = max(buy1, buy2);
+                }
+                else
+                {
+                    // SOLD THE STOCK
+                    int sold1 = prices[i] - fee + next[1];
+                    // IGNORED
+                    int sold2 = 0 + next[0];
+                    curr[canBuy] = max(sold1, sold2);
+                }
+            }
+            next = curr;
+        }
+
+        return curr[1];
+    }
+
+    int maxProfit(vector<int> &prices, int fee)
+    {
+        // return solve(prices,0,1,fee);
+        //  vector<vector<int>>dp(prices.size(),vector<int>(2,-1));
+        // return solveMem(prices,0,1,fee,dp);
+        //  return solveTab(prices,fee);
+        return solveTabSO(prices, fee);
+    }
+};
+
+// Q.NO-23        &&         LEETCODE-Q.NO-494
+class TargetSum
+{
+public:
+    int solve(vector<int> &nums, int i, int target)
+    {
+        if (i >= nums.size())
+        {
+            return target == 0 ? 1 : 0;
+        }
+
+        int plus = solve(nums, i + 1, target - nums[i]);
+        int minus = solve(nums, i + 1, target + nums[i]);
+
+        return plus + minus;
+    }
+
+    int solveMem(vector<int> &nums, int i, int sum, int &target, unordered_map<string, int> &memo)
+    {
+        if (i >= nums.size())
+        {
+            return sum == target ? 1 : 0;
+        }
+
+        // Create a unique key for the current state
+        string key = to_string(i) + "," + to_string(sum);
+
+        // Check if the result is already computed
+        if (memo.find(key) != memo.end())
+        {
+            return memo[key];
+        }
+
+        int plus = solveMem(nums, i + 1, sum + nums[i], target, memo);
+        int minus = solveMem(nums, i + 1, sum - nums[i], target, memo);
+
+        return memo[key] = plus + minus;
+    }
+
+    int solveMemo2(vector<int> &nums, int i, int target, map<pair<int, int>, int> &dp)
+    {
+        if (i >= nums.size())
+        {
+            return target == 0 ? 1 : 0;
+        }
+
+        if (dp.find({i, target}) != dp.end())
+        {
+            return dp[{i, target}];
+        }
+
+        int plus = solveMemo2(nums, i + 1, target - nums[i], dp);
+        int minus = solveMemo2(nums, i + 1, target + nums[i], dp);
+
+        return dp[{i, target}] = plus + minus;
+    }
+
+    int solveTab(vector<int> &nums, int target)
+    {
+        map<pair<int, int>, int> dp;
+        dp[{nums.size(), 0}] = 1;
+
+        int total = 0;
+        for (auto num : nums)
+        {
+            total += num;
+        }
+
+        for (int i = nums.size() - 1; i >= 0; i--)
+        {
+            for (int sum = -total; sum <= total; sum++)
+            {
+                int plus = dp.find({i + 1, sum - nums[i]}) != dp.end() ? dp[{i + 1, sum - nums[i]}] : 0;
+                int minus = dp.find({i + 1, sum + nums[i]}) != dp.end() ? dp[{i + 1, sum + nums[i]}] : 0;
+                dp[{i, sum}] = plus + minus;
+            }
+        }
+        return dp[{0, target}];
+    }
+
+    int findTargetSumWays(vector<int> &nums, int target)
+    {
+        // return solve(nums,0,target);
+        //  unordered_map<string, int> memo;
+        //  return solveMem(nums,0,0,target,memo);
+        //  map<pair<int,int>,int>dp;
+        //  return solveMemo2(nums,0,target,dp);
+        return solveTab(nums, target);
+    }
+};
+
+// Q.NO-24     &&       LEETCODE-Q.NO-474
+class OnesandZeroes
+{
+public:
+    int solve(vector<string> &strs, int i, int m, int n, unordered_map<int, pair<int, int>> &count)
+    {
+        if (i >= strs.size() || (m == 0 && n == 0))
+            return 0;
+
+        int inc = 0;
+        int one = count[i].first;
+        int zero = count[i].second;
+        if (m >= zero && n >= one)
+        {
+            inc = 1 + solve(strs, i + 1, m - zero, n - one, count);
+        }
+        int excl = 0 + solve(strs, i + 1, m, n, count);
+
+        return inc > excl ? inc : excl;
+    }
+
+    int solveMem(vector<string> &strs, int i, int m, int n, unordered_map<int, pair<int, int>> &count, vector<vector<vector<int>>> &dp)
+    {
+        if (i >= strs.size() || (m == 0 && n == 0))
+            return 0;
+
+        if (dp[i][m][n] != -1)
+        {
+            return dp[i][m][n];
+        }
+
+        int inc = 0;
+        int one = count[i].first;
+        int zero = count[i].second;
+        if (m >= zero && n >= one)
+        {
+            inc = 1 + solveMem(strs, i + 1, m - zero, n - one, count, dp);
+        }
+        int excl = 0 + solveMem(strs, i + 1, m, n, count, dp);
+
+        return dp[i][m][n] = inc > excl ? inc : excl;
+    }
+
+    int solveTab(vector<string> &strs, int m_Count, int n_Count, unordered_map<int, pair<int, int>> &count)
+    {
+        vector<vector<vector<int>>> dp(strs.size() + 1, vector<vector<int>>(m_Count + 1, vector<int>(n_Count + 1, 0)));
+
+        for (int i = strs.size() - 1; i >= 0; i--)
+        {
+            int one = count[i].first;
+            int zero = count[i].second;
+            for (int m = m_Count; m >= 0; m--)
+            {
+                for (int n = n_Count; n >= 0; n--)
+                {
+                    int inc = 0;
+                    if (m >= zero && n >= one)
+                    {
+                        inc = 1 + dp[i + 1][m - zero][n - one];
+                    }
+                    int excl = 0 + dp[i + 1][m][n];
+                    dp[i][m][n] = inc > excl ? inc : excl;
+                }
+            }
+        }
+
+        return dp[0][m_Count][n_Count];
+    }
+
+    int solveTabSO(vector<string> &strs, int m_Count, int n_Count, unordered_map<int, pair<int, int>> &count)
+    {
+        vector<vector<int>> curr(m_Count + 1, vector<int>(n_Count + 1, 0));
+        vector<vector<int>> next(m_Count + 1, vector<int>(n_Count + 1, 0));
+
+        for (int i = strs.size() - 1; i >= 0; i--)
+        {
+            int one = count[i].first;
+            int zero = count[i].second;
+            for (int m = m_Count; m >= 0; m--)
+            {
+                for (int n = n_Count; n >= 0; n--)
+                {
+                    int inc = 0;
+                    if (m >= zero && n >= one)
+                    {
+                        inc = 1 + next[m - zero][n - one];
+                    }
+                    int excl = 0 + next[m][n];
+                    curr[m][n] = inc > excl ? inc : excl;
+                }
+            }
+            next = curr;
+        }
+
+        return curr[m_Count][n_Count];
+    }
+
+    int findMaxForm(vector<string> &strs, int m, int n)
+    {
+        unordered_map<int, pair<int, int>> count; // count[index] = {1's count,0's count}
+        for (int i = 0; i < strs.size(); i++)
+        {
+            int zeros = 0, ones = 0;
+            for (auto ch : strs[i])
+            {
+                int temp = ch - '0';
+                if (temp == 0)
+                {
+                    zeros++;
+                }
+                else
+                {
+                    ones++;
+                }
+            }
+            count[i] = {ones, zeros};
+        }
+        // return solve(strs,0,m,n,count);
+        //  vector<vector<vector<int>>> dp(strs.size(), vector<vector<int>>(m + 1, vector<int>(n + 1, -1)));
+
+        // return solveMem(strs,0,m,n,count,dp);
+        // return solveTab(strs,m,n,count);
+        return solveTabSO(strs, m, n, count);
+    }
+};
+
+// Q.NO-25        &&       LEETCODE-Q.NO-801
+class MinimumSwapsToMakeSequencesIncreasing
+{
+public:
+    int solve(vector<int> &nums1, vector<int> &nums2, int i, int prev1, int prev2)
+    {
+        if (i >= nums1.size())
+            return 0;
+
+        int swap = INT_MAX, noSwap = INT_MAX;
+        if (prev1 < nums2[i] && prev2 < nums1[i])
+        {
+            // Case where swap kiya tb koi problem nhi hoga
+            // will handle both the swap case of (i) increasing subseq
+            // (ii) increasing subseq is discontinuing
+            swap = 1 + solve(nums1, nums2, i + 1, nums2[i], nums1[i]);
+        }
+        // noSwap - only if its following increasing subsequence pattern
+        // else if its not then if we go for noSwap then increasing subsequence
+        // pattern is continue to be ruined
+        if (prev1 < nums1[i] && prev2 < nums2[i])
+        {
+            noSwap = 0 + solve(nums1, nums2, i + 1, nums1[i], nums2[i]);
+        }
+        return min(swap, noSwap);
+    }
+
+    int solveMem(vector<int> &nums1, vector<int> &nums2, int i, int prev1, int prev2, vector<vector<int>> &dp, int isSwap)
+    {
+        if (i >= nums1.size())
+            return 0;
+
+        if (dp[i][isSwap] != -1)
+        {
+            return dp[i][isSwap];
+        }
+
+        int swap = INT_MAX, noSwap = INT_MAX;
+        if (prev1 < nums2[i] && prev2 < nums1[i])
+        {
+
+            swap = 1 + solveMem(nums1, nums2, i + 1, nums2[i], nums1[i], dp, 1);
+        }
+
+        if (prev1 < nums1[i] && prev2 < nums2[i])
+        {
+            noSwap = 0 + solveMem(nums1, nums2, i + 1, nums1[i], nums2[i], dp, 0);
+        }
+        return dp[i][isSwap] = min(swap, noSwap);
+    }
+
+    int solveTab(vector<int> &nums1, vector<int> &nums2)
+    {
+        vector<vector<int>> dp(nums1.size() + 1, vector<int>(2, 0));
+
+        for (int i = nums1.size() - 1; i >= 1; i--)
+        {
+            for (int j = 1; j >= 0; j--)
+            {
+                int prev1 = nums1[i - 1];
+                int prev2 = nums2[i - 1];
+                if (j)
+                {
+                    swap(prev1, prev2);
+                }
+                int swap = INT_MAX, noSwap = INT_MAX;
+                if (prev1 < nums2[i] && prev2 < nums1[i])
+                {
+
+                    swap = 1 + dp[i + 1][1];
+                }
+
+                if (prev1 < nums1[i] && prev2 < nums2[i])
+                {
+                    noSwap = 0 + dp[i + 1][0];
+                }
+                dp[i][j] = min(swap, noSwap);
+            }
+        }
+        return dp[1][0];
+    }
+
+    int minSwap(vector<int> &nums1, vector<int> &nums2)
+    {
+        // return solve(nums1,nums2,0,-1,-1);
+        // vector<vector<int>>dp(nums1.size(),vector<int>(2,-1)); //dp[i][swap or noSwap]
+        // return solveMem(nums1,nums2,0,-1,-1,dp,0);
+
+        nums1.insert(nums1.begin(), -1);
+        nums2.insert(nums2.begin(), -1);
+        return solveTab(nums1, nums2);
+    }
+};
+
 int main()
 {
     PerfectSquares *ans1 = new PerfectSquares();
