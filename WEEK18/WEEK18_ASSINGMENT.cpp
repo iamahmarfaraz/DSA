@@ -2200,6 +2200,149 @@ public:
     }
 };
 
+// Q.NO-26        &&       LEETCODE-Q.NO-1402
+class ReducingDishes
+{
+public:
+    int solve(vector<int> &sat, int i, int time)
+    {
+        if (i >= sat.size())
+            return 0;
+
+        int inc = (time * sat[i]) + solve(sat, i + 1, time + 1);
+        int excl = 0 + solve(sat, i + 1, time);
+        return inc > excl ? inc : excl;
+    }
+
+    int solveMem(vector<int> &sat, int i, int time, vector<vector<int>> &dp)
+    {
+        if (i >= sat.size())
+            return 0;
+
+        if (dp[i][time] != -1)
+        {
+            return dp[i][time];
+        }
+
+        int inc = (time * sat[i]) + solveMem(sat, i + 1, time + 1, dp);
+        int excl = 0 + solveMem(sat, i + 1, time, dp);
+        return dp[i][time] = inc > excl ? inc : excl;
+    }
+
+    int solveTab(vector<int> &sat)
+    {
+        vector<vector<int>> dp(sat.size() + 1, vector<int>(sat.size() + 2, 0));
+
+        for (int i = sat.size() - 1; i >= 0; i--)
+        {
+            for (int time = sat.size(); time >= 1; time--)
+            {
+                int inc = (time * sat[i]) + dp[i + 1][time + 1];
+                int excl = 0 + dp[i + 1][time];
+                dp[i][time] = inc > excl ? inc : excl;
+            }
+        }
+
+        return dp[0][1];
+    }
+
+    int solveTabSO(vector<int> &sat)
+    {
+        vector<int> curr(sat.size() + 2, 0);
+        vector<int> next(sat.size() + 2, 0);
+
+        for (int i = sat.size() - 1; i >= 0; i--)
+        {
+            for (int time = sat.size(); time >= 1; time--)
+            {
+                int inc = (time * sat[i]) + next[time + 1];
+                int excl = 0 + next[time];
+                curr[time] = inc > excl ? inc : excl;
+            }
+            next = curr;
+        }
+
+        return curr[1];
+    }
+
+    int maxSatisfaction(vector<int> &satisfaction)
+    {
+        sort(satisfaction.begin(), satisfaction.end());
+        // return solve(satisfaction,0,1);
+        // vector<vector<int>>dp(satisfaction.size(),vector<int>(satisfaction.size()+1,-1));
+        // return solveMem(satisfaction,0,1,dp);
+        // return solveTab(satisfaction);
+        return solveTabSO(satisfaction);
+    }
+};
+
+// Q.NO-27        &&       LEETCODE-Q.NO-486
+class PredicttheWinner
+{
+public:
+    int solve(vector<int> &nums, int start, int end)
+    {
+        if (start == end)
+            return nums[start];
+
+        // diff = P1 - P2
+        int diffByStart = nums[start] - solve(nums, start + 1, end);
+        int diffByEnd = nums[end] - solve(nums, start, end - 1);
+
+        return max(diffByStart, diffByEnd);
+    }
+
+    int solveMem(vector<int> &nums, int start, int end, vector<vector<int>> &dp)
+    {
+        if (start == end)
+            return nums[start];
+
+        if (dp[start][end] != -1)
+        {
+            return dp[start][end];
+        }
+
+        // diff = P1 - P2
+        int diffByStart = nums[start] - solveMem(nums, start + 1, end, dp);
+        int diffByEnd = nums[end] - solveMem(nums, start, end - 1, dp);
+
+        return dp[start][end] = max(diffByStart, diffByEnd);
+    }
+
+    int solveTab(vector<int> &nums, vector<vector<int>> &dp)
+    {
+        for (int i = 0; i < nums.size(); i++)
+        {
+            // Initilazing DP Array according to Base Case
+            dp[i][i] = nums[i];
+        }
+
+        int i = nums.size();
+        for (int start = nums.size() - 1; start >= 0; start--)
+        {
+            for (int end = i; end < nums.size(); end++)
+            {
+                // diff = P1 - P2
+                int diffByStart = nums[start] - dp[start + 1][end];
+                int diffByEnd = nums[end] - dp[start][end - 1];
+
+                dp[start][end] = max(diffByStart, diffByEnd);
+            }
+            i--;
+        }
+
+        return dp[0][nums.size() - 1];
+    }
+
+    bool predictTheWinner(vector<int> &nums)
+    {
+        // return solve(nums,0,nums.size()-1) >= 0;
+        vector<vector<int>> dp(nums.size() + 1, vector<int>(nums.size() + 1, -1));
+        // return solveMem(nums,0,nums.size()-1,dp) >= 0;
+        return solveTab(nums, dp) >= 0;
+    }
+};
+
 int main()
 {
     PerfectSquares *ans1 = new PerfectSquares();
