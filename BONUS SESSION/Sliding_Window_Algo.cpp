@@ -183,6 +183,7 @@ public:
         int ansStartIdx = -1;
         int ansLen = INT_MAX;
         int start = 0;
+        int end = 0;
 
         unordered_map<char, int> sMap;
         unordered_map<char, int> tMap;
@@ -193,9 +194,9 @@ public:
 
         int count = 0; // stores No of pattern(t) wala string ka characters present in
         // curr window
-        for (int i = 0; i < m; i++)
+        while (end < m)
         {
-            char ch = s[i];
+            char ch = s[end];
             // update Freq in sMap
             sMap[ch]++;
             if (sMap[ch] <= tMap[ch])
@@ -217,13 +218,14 @@ public:
                     start++;
                 }
                 // store this minimized ans if its smaller than existing one
-                int currAnsWindowLen = i - start + 1;
+                int currAnsWindowLen = end - start + 1;
                 if (currAnsWindowLen < ansLen)
                 {
                     ansLen = currAnsWindowLen;
                     ansStartIdx = start;
                 }
             }
+            end++;
         }
         if (ansStartIdx == -1)
         {
