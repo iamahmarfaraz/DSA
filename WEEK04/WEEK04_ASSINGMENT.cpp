@@ -114,57 +114,108 @@ int exponentialSearch(vector<int> &arr, int target)
     }
     return -1;
 }
-bool ispossible(int arr[], int n, int m, int mid)
-{
-    int studentCount = 1;
-    int totalsum = 0;
-    for (int i = 0; i < n; i++)
-    {
-        if (totalsum + arr[i] <= mid)
-        {
-            totalsum += arr[i];
+// bool ispossible(int arr[], int n, int m, int mid)
+// {
+//     int studentCount = 1;
+//     int totalsum = 0;
+//     for (int i = 0; i < n; i++)
+//     {
+//         if (totalsum + arr[i] <= mid)
+//         {
+//             totalsum += arr[i];
+//         }
+//         else
+//         {
+//             studentCount++;
+//             if (studentCount > m || arr[i] > mid)
+//             {
+//                 return false;
+//             }
+//             totalsum = arr[i];
+//         }
+//     }
+//     return true;
+// }
+// int bookAllocationProblem(int A[], int N, int M)
+// {
+//     if (M > N)
+//     {
+//         return -1;
+//     }
+//     int sum = 0;
+//     int ans = -1;
+//     for (int i = 0; i < N; i++)
+//     {
+//         sum += A[i];
+//     }
+//     int start = 0;
+//     int end = sum;
+//     while (start <= end)
+//     {
+//         int mid = start + ((end - start) / 2);
+//         if (ispossible(A, N, M, mid))
+//         {
+//             ans = mid;
+//             end = mid - 1;
+//         }
+//         else
+//         {
+//             start = mid + 1;
+//         }
+//     }
+//     return ans;
+// }
+
+int canAllocate(int A[], int N, int M, int mid){
+    // mid = max no of book u can allocate
+    int studentAllocated = 0;
+    int pageAllocatedToACurrStudent = 0;
+    for(int i=0;i<N;i++){
+        if(pageAllocatedToACurrStudent + A[i] <= mid){
+            pageAllocatedToACurrStudent += A[i];
         }
-        else
-        {
-            studentCount++;
-            if (studentCount > m || arr[i] > mid)
-            {
+        else{
+            studentAllocated++;
+            if(studentAllocated > M || A[i] > mid){
                 return false;
             }
-            totalsum = arr[i];
         }
     }
     return true;
 }
-int findPages(int A[], int N, int M)
-{
-    if (M > N)
-    {
-        return -1;
-    }
-    int sum = 0;
-    int ans = -1;
-    for (int i = 0; i < N; i++)
-    {
-        sum += A[i];
-    }
+
+int bookAllocationProblem(int A[], int N, int M){
+    // A[] - 12,34,67,90 , A[i] - No of pages in ith book
+    // M - atmost number of student to allocate book so that max no of pages
+    // a student has to read is minimum
+    // Each book must be allocated
+    // N - no of books
+
+
+    // Now the Solution - we can apply binary search here
+    // we can allocate from 0 to TotalPages(of all book combined)
     int start = 0;
-    int end = sum;
-    while (start <= end)
-    {
-        int mid = start + ((end - start) / 2);
-        if (ispossible(A, N, M, mid))
-        {
+    int end = 0;
+    int ans = INT_MAX;
+    for(int i=0;i<N;i++){
+        end += A[i];
+    }
+
+    while(start <= end){
+        int mid = start + ((end - start)/2);
+
+        if(canAllocate(A,N,M,mid)){
             ans = mid;
             end = mid - 1;
         }
-        else
-        {
+        else{
             start = mid + 1;
         }
     }
+
     return ans;
 }
+
 bool possibleSol(vector<int> &arr, int k, int mid)
 {
     int cowCount = 1;
@@ -291,7 +342,7 @@ int main()
     // int arr[] = {12, 34, 67, 90};
     // int size = 4;
     // int m = 2;
-    // int bookAlloc = findPages(arr, size, m);
+    // int bookAlloc = bookAllocationProblem(arr, size, m);
     // cout << bookAlloc;
 
     // vector<int> arr={4,2,1,3,6};

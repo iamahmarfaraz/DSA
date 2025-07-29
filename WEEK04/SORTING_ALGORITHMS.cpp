@@ -25,7 +25,7 @@ void selectionSort(vector<int> &arr)
         {
             if (arr[j] < minElement)
             {
-                minElement=arr[j];
+                minElement = arr[j];
                 swap(arr[i], arr[j]);
             }
         }
@@ -34,23 +34,19 @@ void selectionSort(vector<int> &arr)
 void insertionSort(vector<int> &arr)
 {
     int j;
-    int size=arr.size();
+    int size = arr.size();
     for (int i = 1; i < size; i++)
     {
-        int temp=arr[i];
-        for ( j = i-1; j >= 0; j--)
+        int temp = arr[i];
+        for (j = i - 1; j >= 0; j--)
         {
-            if (arr[j]>temp)
+            if (arr[j] > temp)
             {
-                arr[j+1]=arr[j];
-                
+                arr[j + 1] = arr[j];
             }
-            
         }
-        arr[j+1]=temp;
-        
+        arr[j + 1] = temp;
     }
-    
 }
 void printVector(vector<int> &arr)
 {
@@ -61,6 +57,8 @@ void printVector(vector<int> &arr)
     }
     cout << endl;
 }
+
+
 int main()
 {
     vector<int> arr = {5, 4, 3, 2, 1};

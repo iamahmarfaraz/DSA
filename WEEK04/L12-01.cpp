@@ -6,7 +6,7 @@ int pivotelementindex(vector<int> &nums, int size)
 {
     int start = 0;
     int end = (size - 1);
-    for (; start <= end;)
+    while(start <= end)
     {
         int mid = (start + ((end - start) / 2));
         if (start == end)
@@ -16,18 +16,24 @@ int pivotelementindex(vector<int> &nums, int size)
         }
         else if ((mid - 1) >= 0 && nums[mid] < nums[mid - 1])
         {
+            // mid se peeche wala element bda hai that means sorted order break hua h
+            //and sorted order pivot ke pass hi break hota h
             return mid - 1;
         }
         else if ((mid + 1) < size && nums[mid] > nums[mid + 1])
         {
+            // mid se aage wala element bda hai that means sorted order break hua h
+            //and sorted order pivot ke pass hi break hota h
             return mid;
         }
         else if (nums[mid] < nums[0])
         {
+            // we are at Part B
             end = mid - 1;
         }
         else
         {
+            // we are at Part A
             start = mid + 1;
         }
     }

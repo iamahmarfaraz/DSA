@@ -7,7 +7,7 @@ int getquotient(int divisor, int dividend)
     int start = 0;
     int end = dividend;
     int ans = -1;
-    for (; start <= end;)
+    while(start <= end)
     {
         int mid = (start + ((end - start) / 2));
         if ((mid * divisor) == dividend)
@@ -33,7 +33,7 @@ int binarysearchInNearlySortedArray(int arr[], int size, int target)
 {
     int start = 0;
     int end = size - 1;
-    for (; start <= end;)
+    while(start <= end)
     {
         int mid = start + ((end - start) / 2);
         if (mid - 1 >= 0 && arr[mid - 1] == target) // mid-1 should be greater than equal to 0 as mid can be at 0th index
