@@ -218,6 +218,55 @@ public:
     }
 };
 
+void topoSortDFS(int src, unordered_map<int,list<pair<int,int>>>&adj, unordered_map<int,bool>visited, stack<int>&st){
+    visited[src] = true;
+
+    for(auto nbr:adj[src]){
+
+        if (!visited[nbr.first])
+        {
+            topoSortDFS(nbr.first,adj,visited,st);
+        }
+    }
+
+    st.push(src);
+}
+
+vector<int> solve(stack<int>st, int &V, unordered_map<int,list<pair<int,int>>>&adj){
+    vector<int>DIST(V,INT_MAX);
+    DIST[st.top()] = 0;
+
+    while (!st.empty())
+    {
+        int currNode = st.top();
+        st.pop();
+
+        for(auto nbr:adj[currNode]){
+            int nbrNode = nbr.first;
+            int nbrWeight = nbr.second;
+
+            if(DIST[currNode] + nbrWeight < DIST[nbrNode]){
+                DIST[nbrNode] = DIST[currNode] + nbrWeight;
+            }
+        }
+    }
+    
+    return DIST;
+}
+
+vector<int> singleSourceShortestPath(unordered_map<int,list<pair<int,int>>>&adj, int V){
+    unordered_map<int,bool>visited;
+    stack<int>st;
+    for(int i=0;i<V;i++){
+        if (!visited[i])
+        {
+            topoSortDFS(i,adj,visited,st);
+        }   
+    }
+
+    return solve(st,V,adj);
+}
+
 int main()
 {
     // Graph<int> g;
@@ -259,3 +308,4 @@ int main()
 
     return 0;
 }
+
